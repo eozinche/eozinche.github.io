@@ -9,8 +9,7 @@
 //         trc.ptc = new THREE.Mesh(geometry, material);
 //             scene.add(trc.ptc);
 
-// }
-
+// }d
 function create_mkr_path() {
     var indices = get_selected_marker_indices();
     console.log(indices);
@@ -128,8 +127,6 @@ function update_vertical_arrow(arrowObj) {
 }
 
 
-var prevVelocity = new THREE.Vector3( 0, 0, 0 );
-
 function create_velocity_arrows() {
   var indices = get_selected_marker_indices();
     for (var i=0; i<indices.length; i++) {
@@ -171,124 +168,216 @@ function update_velocity_arrow(arrowObj) {
 }
 
 
+// /////////////////////////////////// GENERATING ARROW FIELD //////////////////S/////////////////////////
+
+
+// function create_arrow_field_new() {
+//   var indices = get_selected_marker_indices();
+//     for (var i=0; i<indices.length; i++) {
+//     var index = indices[i];
+
+//        //  var velocity = calc_velocity(index, 30);
+//        //  var length = velocity.length();
+//        //  var dir = velocity.normalize();
+//        // // var origin = new THREE.Vector3( 0, 0, 0 );
+//        // // origin.copy(trc.data.vertSamples[currentFrame][indices[i
+
+//        //      var pointing =  new THREE.Vector3(0,0,0);
+//        //      pointing.copy(trc.data.vertSamples[currentFrame][indices[i]]);
+
+//        //  var hex = 0xE96B56;
+
+//        //  var arrowHelper = new THREE.ArrowHelper( dir, origin, length, hex );
+//        //  scene.add( arrowHelper );
+//        //  dynObjs.push({
+//        //      obj: arrowHelper,
+//        //      index: indices[i],
+//        //      updateFunc: update_velocity_arrow
+//        //  });
+// ///////////////
+//        var aGeometry = new THREE.CylinderGeometry( 0, 20, 100, 2, 1, false);
+//         aGeometry.applyMatrix( new THREE.Matrix4().makeRotationFromEuler ( 
+//                                new THREE.Euler( Math.PI / 2, Math.PI, 0 ) ) );
+
+
+//                 scene.matrixAutoUpdate = false;
+
+//                 dynObjs.push({
+//                       obj: aGeometry,
+//                       index: index,
+//                       updateFunc: update_arrow_field_new,
+//                      // pointing: pointing
+//                       children: []
+//         });
+//     }
+// }
+
+
+// function update_arrow_field_new(obj) {
+
+//     if (currentFrame === 0) { return; }
+
+//     // var velocity = calc_velocity(arrowObj.index, 10);
+//     // arrowObj.obj.setLength(velocity.length()*0.3, velocity.length()*0.2, velocity.length()*0.1);
+
+//       var indices = get_selected_marker_indices();
+//         for (var i=0; i<indices.length; i++) {
+//             var index = indices[i];
+
+//             var pointing =  new THREE.Vector3(0,0,0);
+//             pointing.copy(trc.data.vertSamples[currentFrame][index]);
+
+
+//         var aGeometry = new THREE.CylinderGeometry( 0, 4, 25, 3, 1, false);
+//         aGeometry.applyMatrix( new THREE.Matrix4().makeRotationFromEuler ( 
+//                                new THREE.Euler( Math.PI / 2, Math.PI, 0 ) ) );
+
+//  // var pMaterial = new THREE.PointCloudMaterial({
+//  //                        color: 0xFF5050,
+//  //                        size: 3,
+//  //                        blending: THREE.AdditiveBlending,
+//  //                        transparent: true,
+//  //                        sizeAttenuation: false
+//  //                    });
+
+//         var aMaterial = new THREE.MeshNormalMaterial( { 
+//                             blending: THREE.SubtractBlending,
+//                            // blending: THREE.ScreenBlending,
+//                             transparent: true
+//                         });
+
+// //        var aMesh = new THREE.Mesh( aGeometry, aMaterial );
+
+// //                for ( var i = 0; i < 100; i ++ ) {
+//       //  if (obj.children.length<=50) {
+//               //   for ( var i = 0; i < 49; i ++ ) {
+//                     var aMesh = new THREE.Mesh( aGeometry, aMaterial );
+//                     aMesh.position.x = Math.random() * 200 - 50;
+//                     aMesh.position.y = Math.random() * 200 - 50;
+//                     aMesh.position.z = Math.random() * 200 - 50;
+//                     aMesh.scale.x = aMesh.scale.y = aMesh.scale.z = Math.random() * 0.8;
+//                     scene.add( aMesh );
+//                     obj.children.push(aMesh);
+//                     aMesh.lookAt( pointing );
+//            //   } 
+//           //  }
+//    // aMesh.lookAt.copy(pointing);
+//     scene.updateMatrix();
+
+//     // var v = velocity.length();
+//     // console.log("VEL: " + v);
+//     // arrowObj.obj.setDirection(velocity.normalize());
+//     // arrowObj.obj.position.copy(trc.data.vertSamples[currentFrame][arrowObj.index]);
+
+//     // var col = new THREE.Color();
+//     // col.setHex(0xBA064E);
+//     // col.offsetHSL(0.0,0.0,v*0.0005);
+//     // arrowObj.obj.setColor(col.getHex());
+
+//     for (var i=0; i<obj.children.length; i++) {
+//         obj.children[i].material.opacity *= 0.99;
+//         obj.children[ i ].lookAt( pointing );
+//     }
+
+//     // obj.children.push(aMesh);
+// }
+
+// }
+// //////////////////////////////////// GENERATING ARROW FIELD ///////////////////E//////////////////////////
+
 /////////////////////////////////// ARROW FIELD //////////////////S/////////////////////////
 
+function create_arrow_field_new(){
+    for(var i = 0; i<600 ; i++){
+        create_arrow_field_new_A();
+    }
+}
 
-function create_arrow_field_new() {
-  var indices = get_selected_marker_indices();
-    for (var i=0; i<indices.length; i++) {
-    var index = indices[i];
+function create_arrow_field_new_A() {
+  var indices = get_selected_marker_indices();
+    for (var i=0; i<indices.length; i++) {
+    var index = indices[i];
+    var aGeometry = new THREE.CylinderGeometry( 0, 4, 25, 3, 1, false);
+                aGeometry.applyMatrix( new THREE.Matrix4().makeRotationFromEuler ( 
+                               new THREE.Euler( Math.PI / 2, Math.PI, 0 ) ) );
 
-       //  var velocity = calc_velocity(index, 30);
-       //  var length = velocity.length();
-       //  var dir = velocity.normalize();
-       // // var origin = new THREE.Vector3( 0, 0, 0 );
-       // // origin.copy(trc.data.vertSamples[currentFrame][indices[i
+        var aMaterial = new THREE.MeshNormalMaterial( { 
+                            //blending: THREE.SubtractBlending,
+                            //blending: THREE.AdditiveBlending,
+                            blending: THREE.SubtractBlending,
+                            opacity: 0.9,
+                            transparent: true
+                        });
 
-       //      var pointing =  new THREE.Vector3(0,0,0);
-       //      pointing.copy(trc.data.vertSamples[currentFrame][indices[i]]);
+         var aMesh;
 
-       //  var hex = 0xE96B56;
+                scene.matrixAutoUpdate = false;
 
-       //  var arrowHelper = new THREE.ArrowHelper( dir, origin, length, hex );
-       //  scene.add( arrowHelper );
-       //  dynObjs.push({
-       //      obj: arrowHelper,
-       //      index: indices[i],
-       //      updateFunc: update_velocity_arrow
-       //  });
-///////////////
-       var aGeometry = new THREE.CylinderGeometry( 0, 20, 100, 2, 1, false);
-        aGeometry.applyMatrix( new THREE.Matrix4().makeRotationFromEuler ( 
-                               new THREE.Euler( Math.PI / 2, Math.PI, 0 ) ) );
-
-
-                scene.matrixAutoUpdate = false;
-
-                dynObjs.push({
-                      obj: aGeometry,
-                      index: index,
-                      updateFunc: update_arrow_field_new,
-                     // pointing: pointing
-                      children: []
-        });
-    }
+           // for(var i = 0 ; i<500 ; i++){
+               aMesh = new THREE.Mesh( aGeometry, aMaterial );
+                    aMesh.position.x = Math.random() * 200 - 50;
+                    aMesh.position.y = Math.random() * 200 - 50;
+                    aMesh.position.z = Math.random() * 200 - 50;
+                    aMesh.scale.x = aMesh.scale.y = aMesh.scale.z = Math.random() * 0.8;
+                scene.add(aMesh);
+            //}
+    
+                dynObjs.push({
+                      obj: aMesh,
+                      index: index,
+                      updateFunc: update_arrow_field_new,
+                     // pointing: pointing
+                      children: []
+        });
+    }
 }
 
 
-function update_arrow_field_new(obj) {
+function update_arrow_field_new(aMesh) {
 
-    if (currentFrame === 0) { return; }
+    if (currentFrame === 0) { return; }
 
-    // var velocity = calc_velocity(arrowObj.index, 10);
-    // arrowObj.obj.setLength(velocity.length()*0.3, velocity.length()*0.2, velocity.length()*0.1);
+    // var velocity = calc_velocity(arrowObj.index, 10);
+    // arrowObj.obj.setLength(velocity.length()*0.3, velocity.length()*0.2, velocity.length()*0.1);
 
-      var indices = get_selected_marker_indices();
-        for (var i=0; i<indices.length; i++) {
-            var index = indices[i];
+      var indices = get_selected_marker_indices();
+        for (var i=0; i<indices.length; i++) {
+            var index = indices[i];
 
-            var pointing =  new THREE.Vector3(0,0,0);
-            pointing.copy(trc.data.vertSamples[currentFrame][index]);
+            var pointing =  new THREE.Vector3(0,0,0);
+            pointing.copy(trc.data.vertSamples[currentFrame][index]);
 
+            
+                    //scene.add( aMesh );
+                   // obj.children.push(obj);
+                    aMesh.obj.lookAt( pointing );
+    
+    aMesh.obj.material.opacity = 0.7;
+                
+    
+   // aMesh.lookAt.copy(pointing);
+    scene.updateMatrix();
 
-        var aGeometry = new THREE.CylinderGeometry( 0, 4, 25, 3, 1, false);
-        aGeometry.applyMatrix( new THREE.Matrix4().makeRotationFromEuler ( 
-                               new THREE.Euler( Math.PI / 2, Math.PI, 0 ) ) );
+    // var v = velocity.length();
+    // console.log("VEL: " + v);
+    // arrowObj.obj.setDirection(velocity.normalize());
+    // arrowObj.obj.position.copy(trc.data.vertSamples[currentFrame][arrowObj.index]);
 
- // var pMaterial = new THREE.PointCloudMaterial({
- //                        color: 0xFF5050,
- //                        size: 3,
- //                        blending: THREE.AdditiveBlending,
- //                        transparent: true,
- //                        sizeAttenuation: false
- //                    });
+    // var col = new THREE.Color();
+    // col.setHex(0xBA064E);
+    // col.offsetHSL(0.0,0.0,v*0.0005);
+    // arrowObj.obj.setColor(col.getHex());
 
-        var aMaterial = new THREE.MeshNormalMaterial( { 
-                            blending: THREE.SubtractBlending,
-                           // blending: THREE.ScreenBlending,
-                            transparent: true
-                        });
+    // for (var i=0; i<obj.children.length; i++) {
+    //     obj.children[i].material.opacity *= 0.99;
+    //     obj.children[ i ].lookAt( pointing );
+    // }
 
-//        var aMesh = new THREE.Mesh( aGeometry, aMaterial );
-
-//                for ( var i = 0; i < 100; i ++ ) {
-      //  if (obj.children.length<=50) {
-              //   for ( var i = 0; i < 49; i ++ ) {
-                    var aMesh = new THREE.Mesh( aGeometry, aMaterial );
-                    aMesh.position.x = Math.random() * 200 - 50;
-                    aMesh.position.y = Math.random() * 200 - 50;
-                    aMesh.position.z = Math.random() * 200 - 50;
-                    aMesh.scale.x = aMesh.scale.y = aMesh.scale.z = Math.random() * 0.8;
-                    scene.add( aMesh );
-                    obj.children.push(aMesh);
-                    aMesh.lookAt( pointing );
-           //   } 
-          //  }
-   // aMesh.lookAt.copy(pointing);
-    scene.updateMatrix();
-
-    // var v = velocity.length();
-    // console.log("VEL: " + v);
-    // arrowObj.obj.setDirection(velocity.normalize());
-    // arrowObj.obj.position.copy(trc.data.vertSamples[currentFrame][arrowObj.index]);
-
-    // var col = new THREE.Color();
-    // col.setHex(0xBA064E);
-    // col.offsetHSL(0.0,0.0,v*0.0005);
-    // arrowObj.obj.setColor(col.getHex());
-
-    for (var i=0; i<obj.children.length; i++) {
-        obj.children[i].material.opacity *= 0.99;
-        obj.children[ i ].lookAt( pointing );
-    }
-
-    // obj.children.push(aMesh);
+    // obj.children.push(aMesh);
 }
 
 }
 //////////////////////////////////// ARROW FIELD ///////////////////E//////////////////////////
-
-
 
 
 var maxSpeeds = {};
@@ -449,176 +538,239 @@ function update_speed_spheres_original(obj) {
     obj.children.push(sphere);
 }
 
-function update_speed_spheres(obj) {
-    if (currentFrame === 0) { return; }
-    var speed = calc_speed(obj.index) / obj.maxSpeed;
-    var radius = speed*1.5;
-    var segments = 6;
- //   var sphere;
+// function update_speed_spheres(obj) {
+//     if (currentFrame === 0) { return; }
+//     var speed = calc_speed(obj.index) / obj.maxSpeed;
+//     var radius = speed*1.5;
+//     var segments = 6;
+//  //   var sphere;
 
-    var particles = 50;   
-    var positions = new Float32Array( particles * 3 );
-    var colors = new Float32Array( particles * 3 );
-    var color = new THREE.Color();
-    var n = 100, n2 = n / 2; // particles spread in the cube
+//     var particles = 50;   
+//     var positions = new Float32Array( particles * 3 );
+//     var colors = new Float32Array( particles * 3 );
+//     var color = new THREE.Color();
+//     var n = 100, n2 = n / 2; // particles spread in the cube
 
-    for ( var i = 0; i < positions.length; i += 10 ) {
+//     for ( var i = 0; i < positions.length; i += 10 ) {
 
-                    // positions
+//                     // positions
 
-                    var x = Math.random() * n - n2;
-                    var y = Math.random() * n - n2;
-                    var z = Math.random() * n - n2;
+//                     var x = Math.random() * n - n2;
+//                     var y = Math.random() * n - n2;
+//                     var z = Math.random() * n - n2;
 
-                    positions[ i ]     = x;
-                    positions[ i + 1 ] = y;
-                    positions[ i + 2 ] = z;
+//                     positions[ i ]     = x;
+//                     positions[ i + 1 ] = y;
+//                     positions[ i + 2 ] = z;
 
-                    // colors
+//                     // colors
 
-                    var vx = ( x / n ) + 0.5;
-                    var vy = ( y / n ) + 0.5;
-                    var vz = ( z / n ) + 0.5;
+//                     var vx = ( x / n ) + 0.5;
+//                     var vy = ( y / n ) + 0.5;
+//                     var vz = ( z / n ) + 0.5;
 
-                    color.setRGB( vx, vy, vz );
+//                     color.setRGB( vx, vy, vz );
 
-                    colors[ i ]     = color.r;
-                    colors[ i + 1 ] = color.g;
-                    colors[ i + 2 ] = color.b;
+//                     colors[ i ]     = color.r;
+//                     colors[ i + 1 ] = color.g;
+//                     colors[ i + 2 ] = color.b;
 
-                }
-
-
-    if (obj.children.length > trailLength ) {
-        particles = obj.children.shift();
-        particles.material.opacity *=0.97;
-    } else {
+//                 }
 
 
-
-        var geometry = new THREE.BufferGeometry();
-
-                geometry.addAttribute( 'position', new THREE.BufferAttribute( positions, 3 ) );
-                geometry.addAttribute( 'color', new THREE.BufferAttribute( colors, 3 ) );
-
-                geometry.computeBoundingSphere();
+//     if (obj.children.length > trailLength ) {
+//         particles = obj.children.shift();
+//         particles.material.opacity *=0.97;
+//     } else {
 
 
-        var material = new THREE.PointCloudMaterial( { size: 2, vertexColors: THREE.VertexColors } );
 
-                particleSystem = new THREE.PointCloud( geometry, material );
-                scene.add( particleSystem );
+//         var geometry = new THREE.BufferGeometry();
+
+//                 geometry.addAttribute( 'position', new THREE.BufferAttribute( positions, 3 ) );
+//                 geometry.addAttribute( 'color', new THREE.BufferAttribute( colors, 3 ) );
+
+//                 geometry.computeBoundingSphere();
+
+
+//         var material = new THREE.PointCloudMaterial( { size: 2, vertexColors: THREE.VertexColors } );
+
+//                 particleSystem = new THREE.PointCloud( geometry, material );
+//                 scene.add( particleSystem );
                 
-    }
+//     }
 
 
-    particleSystem.position.copy(trc.data.vertSamples[currentFrame][obj.index]);
-    particleSystem.scale.copy(new THREE.Vector3(radius, radius, radius ));
-    particleSystem.updateMatrix();
+//     particleSystem.position.copy(trc.data.vertSamples[currentFrame][obj.index]);
+//     particleSystem.scale.copy(new THREE.Vector3(radius, radius, radius ));
+//     particleSystem.updateMatrix();
 
 
-    for (var i=0; i<obj.children.length; i++) {
-        obj.children[i].material.opacity *= 0.95;
-    }
-    obj.children.push(particleSystem);
-}
+//     for (var i=0; i<obj.children.length; i++) {
+//         obj.children[i].material.opacity *= 0.95;
+//     }
+//     obj.children.push(particleSystem);
+// }
 
-/////////////////////////////////////////////////
-/////////////////////////////////////////////////
-/////////////////////////////////////////////////
+///////////////////////////////////////////////////////
+///////////////////////////////////////////////////////
+///////////////////////////////////////////////////////
+/////////////////////////////////////////////
 
-
-
-function create_test_circles(){
-
-var indices = get_selected_marker_indices();
+function create_speed_sounds() {
+    var indices = get_selected_marker_indices();
     for (var i=0; i<indices.length; i++) {
-
-        var velocity = calc_velocity(indices[i], 30);
-        var length = velocity.length();
-        var dir = velocity.normalize();
-
-
-        ///////changed by chanwook
-        var accel = new THREE.Vector3();
-
-        accel.subVectors(preVelo, velocity);
-        accel.divideScalar(0.033333);
-
-        var accel_length = accel.length();
-        var accel_dir = accel.normalize();
-        ////////////////
-    //    console.log(velocity);
-
-        var origin = new THREE.Vector3( 0, 0, 0 );
-        origin.copy(trc.data.vertSamples[currentFrame][indices[i]]);
-
-        var hex = 0xE96B56;
-
+        var index = indices[i];
+        var maxSpeed = calc_max_speed(index)
+        maxSpeeds[index] = maxSpeed;
         dynObjs.push({
             obj: null,
-            index: indices[i],
-            updateFunc: update_test_circles,
+            index: index,
+            updateFunc: update_speed_sounds,
+            maxSpeed: maxSpeed,
             children: []
         });
     }
-
+    delay_count = 0;
 }
 
-function update_test_circles(obj) {
-   
- //   var speed = calc_speed(obj.index) / obj.maxSpeed;
-  //  var speedwoMaxS = calc_speed(obj.index);
+function update_speed_sounds(obj) {
 
-
- var velocity = calc_velocity(obj.index, 10);
-    ///////changed by chanwook
-        var accel = new THREE.Vector3();
-
-        accel.subVectors(velocity,preVelo);
-        accel.divideScalar(0.0833333);
-
-
-    var radius = 2.0;
-    var circle;
-    //var scaleFactor = 1/(1000*speed);
-   // var scaleFactor = 1/(50*speed);
-    //var scaleFactor = 20*speed;
-   
-
-  // 1/(1000*speed)
+    if (currentFrame === 0) { return; }
+    var speed = calc_speed(obj.index) / obj.maxSpeed;
+    var radius = speed*10;
+    var segments = 20;
+    var sphere;
 
     if (obj.children.length > trailLength ) {
-        circle = obj.children.shift();
-        circle.material.opacity = 1.0;
+        sphere = obj.children.shift();
+        sphere.material.opacity = 1.0;
     } else {
-        var segments = 50;
-        var circleGeometry = new THREE.CircleGeometry( radius, segments );
+        var geometry = new THREE.SphereGeometry(1.0, segments, segments);
         var material = new THREE.MeshBasicMaterial({
-            color: 0x003399,
+            color: 0x99FF99,
             transparent: true
         });
-        circle = new THREE.Mesh( circleGeometry, material );
-      //  console.log("New circle");
-        circle.matrixAutoUpdate = false;
-        circle.rotateOnAxis (new THREE.Vector3( 1, 0, 0 ), degToRad(-90.0));
-        scene.add( circle );
+        sphere = new THREE.Mesh(geometry, material);
+        scene.add(sphere);
     }
+    sphere.position.copy(trc.data.vertSamples[currentFrame][obj.index]);
+    sphere.scale.copy(new THREE.Vector3(radius, radius, radius ));
 
-    circle.position.copy(trc.data.vertSamples[currentFrame][obj.index]);
-    //circle.position.setY(0.0);
-    circle.scale.copy(new THREE.Vector3(accel.length()*0.001, accel.length()*0.001, 1.0));
-    circle.updateMatrix();
+    sphere.updateMatrix();
+
+  //  camera.lookAt(trc.data.vertSamples[currentFrame][obj.index]);
     
-    preVelo = velocity;
-
-
+    
     for (var i=0; i<obj.children.length; i++) {
         obj.children[i].material.opacity *= 0.95;
     }
-    obj.children.push(circle);
+    obj.children.push(sphere);
+
+    if(delay_count % Math.round(1/speed)  == 0){
+    //if(delay_count % 2 == 0){
+        if(speed > 0.7){
+            if (soundOn == true) {
+                 mySound = new buzz.sound("/sound/chimebar-g-low.wav", {
+                volume: 100
+                }); 
+                mySound.play().fadeIn();
+                soundOn = false;
+            }
+        } else { soundOn = true; }
+
+
+        // if(speed > 0.6 & speed <= 0.7){
+        //     mySound = new buzz.sound("/sound/chimebar-g-low.wav", {
+        //         volume: 80 
+        //     }); 
+        //     mySound.play().fadeIn();
+        // }
+
+        if(speed > 0.5 & speed <= 0.6){
+            if (soundOn == true) {
+            mySound = new buzz.sound("/sound/chimebar-f-low.wav", {
+                volume: 70 
+            }); 
+            mySound.play().fadeIn();
+            soundOn = false;
+            }
+        } else { soundOn = true; }
+
+
+        // if(speed > 0.4 & speed <= 0.5){
+        //     mySound = new buzz.sound("/sound/chimebar-f-low.wav", {
+        //         volume: 60 
+        //     }); 
+        //     mySound.play().fadeIn();
+        // }
+
+        if(speed > 0.3 & speed <= 0.4){
+            if (soundOn == true) {
+            mySound = new buzz.sound("/sound/chimebar-eb-low.wav", {
+                volume: 50 
+            }); 
+            mySound.play().fadeIn();
+            soundOn = false;
+            }
+        } else { soundOn = true; }
+
+
+        // if(speed > 0.25 & speed <= 0.3){
+        //      mySound = new buzz.sound("/sound/chimebar-eb-low.wav", {
+        //     volume: 40 
+        // }); 
+        //     mySound.play().fadeIn();
+        // }
+
+        if(speed > 0.2 & speed <= 0.25){
+            if (soundOn == true) {
+            mySound = new buzz.sound("/sound/chimebar-e-low.wav", {
+                volume: 30 
+            }); 
+            mySound.play().fadeIn();
+         soundOn = false;
+            }
+        } else { soundOn = true; }
+
+
+        // if(speed > 0.15 & speed <= 0.2){
+        //     mySound = new buzz.sound("/sound/chimebar-e-low.wav", {
+        //         volume: 20
+        //     }); 
+        //     mySound.play().fadeIn();
+        // }
+
+        if(speed > 0.1 & speed <= 0.15){
+            if (soundOn == true) {
+            mySound = new buzz.sound("/sound/chimebar-d-low.wav", {
+                volume: 10
+            }); 
+            mySound.play().fadeIn();
+         soundOn = false;
+            }
+        } else { soundOn = true; }
+
+
+        // if(speed > 0.05 & speed <= 0.1){
+        //     mySound = new buzz.sound("/sound/chimebar-c-low.wav", {
+        //         volume: 5
+        //     }); 
+        //     mySound.play().fadeIn();
+        // }
+
+        if(speed < 0.05){
+            if (soundOn == true) {
+            mySound = new buzz.sound("/sound/chimebar-c-low.wav", {
+                volume: 2
+            }); 
+            mySound.play().fadeIn();
+         soundOn = false;
+            }
+        } else { soundOn = true; }
+
+    }
+
+    delay_count++;
 }
-
-
-
-
+//

@@ -227,9 +227,8 @@ function load_trc(url, callback) {
                 trcData.vertSamples.push(vertices);
             }
             trc.data = trcData;
-
-
-
+            
+/////////////
         var geometry = new THREE.SphereGeometry(0.5, segments, segments);
         var material = new THREE.MeshBasicMaterial({
             //color: 0xD24344,
@@ -238,6 +237,7 @@ function load_trc(url, callback) {
         });
         trc.ptc = new THREE.Mesh(geometry, material);
             scene.add(trc.ptc);
+/////////////
 
             interval = (1000.0 / trc.data.DataRate);
             startTime = Date.now();

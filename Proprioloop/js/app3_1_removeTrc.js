@@ -17,7 +17,7 @@ var mInterval = 5000.0;
 var dynObjs = [];
 var mkrParams;
 var gui;
-var trailLength = 50;
+var trailLength = 10;
 
 var radius = 5;
 var segments = 6;
@@ -42,9 +42,9 @@ var windowHalfY = window.innerHeight / 2;
 
 //-------particle----------//
             var group;
-            var container, stats;
+            var container;
             var particlesData = [];
-            var camera, scene, Renderer;
+
             var pPositions,pColors;
             var pointCloud;
             var particlePositions;
@@ -287,27 +287,15 @@ function open_trc(url) {
 
 //////////////////////INIT////////////S///////////////////////
 
+var lookAtPoint = new THREE.Vector3(0,0,0);
+
 function init() {
 
             container = document.createElement('div');
             document.body.appendChild(container);
 
-            // var info = document.createElement('div');
-            // info.style.position = 'absolute';
-            // info.style.left = '20px';
-            // info.style.bottom = '20px';
-            // info.style.width = '100%';
-            // info.style.color = 'white';
-            // info.style.textAlign = 'left';
-            // info.innerHTML = "";
-            //  onclick:"open_trc('"+url+"')"})
-            // info.innerHTML += '</div>';
-            // container.appendChild(info);
-
 
     renderer = new THREE.WebGLRenderer({ antialias: true });
-   //// renderer.setClearColor( 0x212538 );
-    //renderer.setClearColor( 0xCFCFCF );
     renderer.setClearColor(0x161617);
     renderer.setPixelRatio( window.devicePixelRatio );
     renderer.setSize(window.innerWidth, window.innerHeight);
@@ -324,10 +312,16 @@ function init() {
         var WIDTH = window.innerWidth, HEIGHT = window.innerHeight;
         renderer.setSize(WIDTH, HEIGHT);
         camera.aspect = WIDTH/HEIGHT;
+
         camera.updateProjectionMatrix();
     });
+
+
     camera.position.z = 120;
     camera.position.y = 100;
+
+
+    camera.lookAt(lookAtPoint);
 
     $('#shortcutModal').modal({
         keyboard: true,
@@ -362,7 +356,7 @@ function new_scene() {
     gridHelper.setColors (0x000000, 0x000000);
    // scene.add(gridHelper);
 
-    callParticleSystem();
+
    // create_arrow_field();
 
 
@@ -561,157 +555,6 @@ function create_surface(){
 }
 
 
-
-function callParticleSystem(){
-    //Particle System : grab from app3.js //
-
-                    pGeometry = new THREE.BufferGeometry();
-                    var pMaterial = new THREE.LineBasicMaterial({ vertexColors: THREE.VertexColors });
-
-                    var pSegments = maxParticleCount * maxParticleCount;
-
-                    pPositions = new Float32Array( pSegments * 3 );
-                    pColors = new Float32Array( pSegments * 3 );
-
-                    var pMaterial = new THREE.PointCloudMaterial({
-                        color: 0xFF5050,
-                        size: 3,
-                        blending: THREE.AdditiveBlending,
-                        transparent: true,
-                        sizeAttenuation: false
-                    });
-
-                particles = new THREE.BufferGeometry();
-                particlePositions = new Float32Array( maxParticleCount * 3 );
-
-                for ( var i = 0; i < maxParticleCount; i++ ) {
-
-                    var x = Math.random() * r - r / 2;
-                    var y = Math.random() * r - r / 2;
-                    var z = Math.random() * r - r / 2;
-
-                    particlePositions[ i * 3     ] = x;
-                    particlePositions[ i * 3 + 1 ] = y;
-                    particlePositions[ i * 3 + 2 ] = z;
-
-                    // add it to the geometry
-                    particlesData.push({
-                        velocity: new THREE.Vector3( -1 + Math.random() * 2, -1 + Math.random() * 2,  -1 + Math.random() * 2 ),
-                        numConnections: 0
-                    });
-
-                }
-
-                particles.drawcalls.push( {
-                    start: 0,
-                    count: particleCount,
-                    index: 0
-                } );
-
-                particles.addAttribute( 'position', new THREE.BufferAttribute( particlePositions, 3 ) );
-
-                // create the particle system
-                pointCloud = new THREE.PointCloud( particles, pMaterial );
-
-                group = new THREE.Object3D();
-
-                // add it to the scene
-                group.add( pointCloud );
-
-                pGeometry.addAttribute( 'position', new THREE.BufferAttribute( pPositions, 3 ) );
-                pGeometry.addAttribute( 'color', new THREE.BufferAttribute( pColors, 3 ) );
-
-                pGeometry.computeBoundingSphere();
-
-                pGeometry.drawcalls.push( {
-                    start: 0,
-                    count: 0,
-                    index: 0
-                } );
-
-                linesMesh = new THREE.Line( pGeometry, pMaterial, THREE.LinePieces );
-                group.add( linesMesh );
-
-              //  scene.add( group );
-}
-
-function pAnimate() {
-                var vertexpos = 0;
-                var colorpos = 0;
-                var numConnected = 0;
-
-                for ( var i = 0; i < particleCount; i++ )
-                    particlesData[ i ].numConnections = 0;
-
-                for ( var i = 0; i < particleCount; i++ ) {
-
-                    // get the particle
-                    var particleData = particlesData[i];
-
-                    particlePositions[ i * 3     ] += particleData.velocity.x;
-                    particlePositions[ i * 3 + 1 ] += particleData.velocity.y;
-                    particlePositions[ i * 3 + 2 ] += particleData.velocity.z;
-
-                    if ( particlePositions[ i * 3 + 1 ] < -rHalf || particlePositions[ i * 3 + 1 ] > rHalf )
-                        particleData.velocity.y = -particleData.velocity.y;
-
-                    if ( particlePositions[ i * 3 ] < -rHalf || particlePositions[ i * 3 ] > rHalf )
-                        particleData.velocity.x = -particleData.velocity.x;
-
-                    if ( particlePositions[ i * 3 + 2 ] < -rHalf || particlePositions[ i * 3 + 2 ] > rHalf )
-                        particleData.velocity.z = -particleData.velocity.z;
-
-                    if ( effectController.limitConnections && particleData.numConnections >= effectController.maxConnections )
-                        continue;
-
-                    // Check collision
-                    for ( var j = i + 1; j < particleCount; j++ ) {
-
-                        var particleDataB = particlesData[ j ];
-                        if ( effectController.limitConnections && particleDataB.numConnections >= effectController.maxConnections )
-                            continue;
-
-                        var dx = particlePositions[ i * 3     ] - particlePositions[ j * 3     ];
-                        var dy = particlePositions[ i * 3 + 1 ] - particlePositions[ j * 3 + 1 ];
-                        var dz = particlePositions[ i * 3 + 2 ] - particlePositions[ j * 3 + 2 ];
-                        var dist = Math.sqrt( dx * dx + dy * dy + dz * dz );
-
-                        if ( dist < effectController.minDistance ) {
-
-                            particleData.numConnections++;
-                            particleDataB.numConnections++;
-
-                            var alpha = 1.0 - dist / effectController.minDistance + 0.2;
-
-                            pPositions[ vertexpos++ ] = particlePositions[ i * 3     ];
-                            pPositions[ vertexpos++ ] = particlePositions[ i * 3 + 1 ];
-                            pPositions[ vertexpos++ ] = particlePositions[ i * 3 + 2 ];
-
-                            pPositions[ vertexpos++ ] = particlePositions[ j * 3     ];
-                            pPositions[ vertexpos++ ] = particlePositions[ j * 3 + 1 ];
-                            pPositions[ vertexpos++ ] = particlePositions[ j * 3 + 2 ];
-
-                            pColors[ colorpos++ ] = alpha;
-                            pColors[ colorpos++ ] = alpha;
-                            pColors[ colorpos++ ] = alpha;
-
-                            pColors[ colorpos++ ] = alpha;
-                            pColors[ colorpos++ ] = alpha;
-                            pColors[ colorpos++ ] = alpha;
-
-                            numConnected++;
-                        }
-                    }
-                }
-
-
-                linesMesh.geometry.drawcalls[ 0 ].count = numConnected * 2;
-                linesMesh.geometry.attributes.position.needsUpdate = true;
-                linesMesh.geometry.attributes.color.needsUpdate = true;
-
-                pointCloud.geometry.attributes.position.needsUpdate = true;
-}
-
 function animate() {
     if (isLoading) return;
     var currentTime=Date.now();
@@ -729,8 +572,10 @@ function animate() {
             for (var i=0; i<dynObjs.length; i++) {
                 dynObjs[i].updateFunc(dynObjs[i]);
             }
+         //   if(isFieldVisible == false) pAnimate();
 
-            if(isFieldVisible == false) pAnimate();
+      //////////////////    camera.lookAt(trc.data.vertSamples[currentFrame][index]);
+    
         }
 
     } else {
@@ -740,6 +585,8 @@ function animate() {
             dynObjs[i].updateFunc(dynObjs[i]);
         }
     }
+
+    //lookAtPoint = 
 
 
     ////////////
@@ -758,26 +605,21 @@ var keyPressed = function(event) {
    // console.log(event);
     switch (event.keyCode) {
         case 32: // space - stop and start playback
-          //  isPlaying = !isPlaying;
-         // var preVelo = new THREE.Vector3(0,0,0);
-            create_test_circles();
+           isPlaying = !isPlaying;
             break;
-
 
 //////////////////////////////////////////number 1 -4
 
-        case 49: // num 1 - change points view option
+        case 49: // number 1 - change points view option
             pointsOption = !pointsOption; 
             break;
 
-        case 50: // number 2 : ACCELO circles  
-        //var preVelo = new THREE.Vector3(0,0,0);
+        case 50: // number 2 : ACCELO CIRCLE
             create_test_circles();
-            //  create_speed_circles(); // create_circles();
             break;
 
        case 51: // number 3
-            
+            create_speed_sounds();
             //  create_speed_circles(); // create_circles();
             break;
 
@@ -793,7 +635,7 @@ var keyPressed = function(event) {
             break;
         case 66: // b - creates brush strokes along the ground, following the selected markers
             //create_speed_circles();
-            create_circles();
+           create_circles();
             break;
         case 67: // c - creates a spline curve between the selected markers that travels with them
             create_mkr_curve();
@@ -826,6 +668,7 @@ var keyPressed = function(event) {
             break;
         case 84: // t - create motion trails
             create_speed_spheres();
+         //    create_speed_sounds();
             break;
         case 85: // u - create "up" arrows
             create_vertical_arrows();
@@ -894,7 +737,6 @@ var indices = get_selected_marker_indices();
         var length = velocity.length();
         var dir = velocity.normalize();
 
-
         ///////changed by chanwook
         var accel = new THREE.Vector3();
 
@@ -909,7 +751,7 @@ var indices = get_selected_marker_indices();
         var origin = new THREE.Vector3( 0, 0, 0 );
         origin.copy(trc.data.vertSamples[currentFrame][indices[i]]);
 
-        var hex = 0xE96B56;
+        var hex = 0xFFCCCC;
 
         dynObjs.push({
             obj: null,
@@ -918,14 +760,12 @@ var indices = get_selected_marker_indices();
             children: []
         });
     }
-
 }
 
 function update_test_circles(obj) {
    
  //   var speed = calc_speed(obj.index) / obj.maxSpeed;
   //  var speedwoMaxS = calc_speed(obj.index);
-
 
  var velocity = calc_velocity(obj.index, 10);
     ///////changed by chanwook
@@ -941,26 +781,24 @@ function update_test_circles(obj) {
    // var scaleFactor = 1/(50*speed);
     //var scaleFactor = 20*speed;
    
-
   // 1/(1000*speed)
 
     if (obj.children.length > trailLength ) {
         circle = obj.children.shift();
         circle.material.opacity = 1.0;
+
     } else {
         var segments = 50;
         var circleGeometry = new THREE.CircleGeometry( radius, segments );
         var material = new THREE.MeshBasicMaterial({
-            color: 0x003399,
+            color: 0xFFCCCC,
             transparent: true
         });
         circle = new THREE.Mesh( circleGeometry, material );
-      //  console.log("New circle");
         circle.matrixAutoUpdate = false;
         circle.rotateOnAxis (new THREE.Vector3( 1, 0, 0 ), degToRad(-90.0));
         scene.add( circle );
     }
-
     circle.position.copy(trc.data.vertSamples[currentFrame][obj.index]);
     //circle.position.setY(0.0);
     circle.scale.copy(new THREE.Vector3(accel.length()*0.001, accel.length()*0.001, 1.0));
@@ -968,17 +806,11 @@ function update_test_circles(obj) {
     
     preVelo = velocity;
 
-
     for (var i=0; i<obj.children.length; i++) {
         obj.children[i].material.opacity *= 0.95;
     }
     obj.children.push(circle);
 }
-
-
-
-
-
 
 
 

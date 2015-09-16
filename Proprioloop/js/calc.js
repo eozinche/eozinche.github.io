@@ -17,10 +17,11 @@ function calc_velocity(index, tDelta) {
 
     velocity.multiplyScalar(speed);
 
-    oldVelocity = new THREE.Vector3( currentVelocity );
-    currentVelocity = new THREE.Vector3( velocity );
+    // oldVelocity = new THREE.Vector3( currentVelocity );
+    // currentVelocity = new THREE.Vector3( velocity );
 
-    return currentVelocity;
+    return velocity;
+
 }
 
 

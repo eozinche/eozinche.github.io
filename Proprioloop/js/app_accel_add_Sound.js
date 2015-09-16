@@ -19,7 +19,7 @@ var gui;
 var trailLength = 10;
 
 var gridHelper;
-var isGridHelperVisible = true;
+var isGridHelperVisible = false;
 var isPtcVisible = true;
 var isLoading = false;
 
@@ -110,7 +110,7 @@ function init() {
         camera.updateProjectionMatrix();
     });
     camera.position.z = 120;
-    //camera.lookAt();
+
 
     $('#shortcutModal').modal({
         keyboard: true,
@@ -142,7 +142,7 @@ function new_scene() {
     currentFrame = 0;
     dynObjs = [];
     mkrParams = [];
-    isGridHelperVisible = true;
+    isGridHelperVisible = false;
     isPtcVisible = true;
 }
 
@@ -315,7 +315,7 @@ function animate() {
 
 function render() {
     renderer.render(scene, camera);
-    controls.update();
+   // controls.update();
 }
 
 var keyPressed = function(event) {
@@ -873,7 +873,7 @@ function update_speed_spheres(obj) {
 
     sphere.updateMatrix();
 
-    camera.lookAt(trc.data.vertSamples[currentFrame][obj.index]);
+    //camera.lookAt(trc.data.vertSamples[currentFrame][obj.index]);
     
     
     for (var i=0; i<obj.children.length; i++) {

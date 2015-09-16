@@ -9,19 +9,36 @@ var BOTTOM = ['BRHip', 'BLHip', 'FRHip', 'FLHip', 'R_Troc', 'R_Thigh', 'R_Knee',
 var SCALE = 0.05;
 var trc = {};
 var isPlaying = true;
-var currentFrame = -1;
+var currentFrame = 0;
 var startTime;
 var previousTime;
 var interval;
 var dynObjs = [];
 var mkrParams;
 var gui;
-var trailLength = 50;
+var trailLength = 10;
 
 var gridHelper;
 var isGridHelperVisible = true;
 var isPtcVisible = true;
 var isLoading = false;
+
+//changed by Chanwook 150831///
+var mySound; 
+var delay_count;
+///////////////////////////////
+
+
+//changed by Chanwook
+var container, stats;
+var particle;
+var mouseX = 0, mouseY = 0;
+
+var windowHalfX = window.innerWidth / 2;
+var windowHalfY = window.innerHeight / 2;
+/////////////////////
+
+var soundOn = false;
 
 function load_data_index(url, callback) {
     $.getJSON(url, function(data) {
@@ -80,7 +97,7 @@ function load_data_index(url, callback) {
 function init() {
 
     renderer = new THREE.WebGLRenderer();
-    renderer.setClearColor( 0x212538 );
+    renderer.setClearColor(0x161617);
     renderer.setPixelRatio( window.devicePixelRatio );
     renderer.setSize(window.innerWidth, window.innerHeight);
     document.body.appendChild(renderer.domElement);
@@ -93,6 +110,7 @@ function init() {
         camera.updateProjectionMatrix();
     });
     camera.position.z = 120;
+    //camera.lookAt();
 
     $('#shortcutModal').modal({
         keyboard: true,
@@ -243,12 +261,37 @@ function open_trc(url) {
     load_trc(url, initGui);
 }
 
+// function animate() {
+//     if (isLoading) return;
+//     var currentTime=Date.now();
+//     if (isPlaying) {
+//         var frameNumber = Math.floor(((currentTime - startTime)/interval) % trc.data.NumFrames);
+//         if (currentFrame != frameNumber) {
+//             currentFrame = frameNumber;
+//             trc.ptc.geometry.vertices = trc.data.vertSamples[currentFrame];
+//             trc.ptc.geometry.verticesNeedUpdate = true;
+//             //
+//             for (var i=0; i<dynObjs.length; i++) {
+//                 dynObjs[i].updateFunc(dynObjs[i]);
+//             }
+//         }
+
+//     } else {
+//         trc.ptc.geometry.vertices = trc.data.vertSamples[currentFrame];
+//         trc.ptc.geometry.verticesNeedUpdate = true;
+//         for (var i=0; i<dynObjs.length; i++) {
+//             dynObjs[i].updateFunc(dynObjs[i]);
+//         }
+//     }
+//     requestAnimationFrame(animate);
+//     render();
+// }
+
 function animate() {
     if (isLoading) return;
     var currentTime=Date.now();
     if (isPlaying) {
         var frameNumber = Math.floor(((currentTime - startTime)/interval) % trc.data.NumFrames);
-
         if (currentFrame != frameNumber) {
             currentFrame = frameNumber;
             trc.ptc.geometry.vertices = trc.data.vertSamples[currentFrame];
@@ -272,7 +315,7 @@ function animate() {
 
 function render() {
     renderer.render(scene, camera);
-    controls.update();
+    //controls.update();
 }
 
 var keyPressed = function(event) {
@@ -284,9 +327,12 @@ var keyPressed = function(event) {
         case 65: // a - creates a curve that spans through the selected points over the duration of the clip
             create_mkr_path();
             break;
-        case 66: // b - creates brush strokes along the ground, following the selected markers
-            create_speed_circles();
+        case 66: // b 
+
+            create_test_circles();
+            //  create_speed_circles(); // create_circles();
             break;
+
         case 67: // c - creates a spline curve between the selected markers that travels with them
             create_mkr_curve();
             break;
@@ -425,6 +471,167 @@ function update_curve(splineObject) {
     splineObject.obj.geometry.verticesNeedUpdate = true;
 }
 
+function create_circles(){
+    var indices = get_selected_marker_indices();
+        for (var i=0; i<indices.length; i++) {
+        var index = indices[i];
+        var maxSpeed = calc_max_speed(index);
+        maxSpeeds[index] = maxSpeed;
+        dynObjs.push({
+            obj: null,
+            index: index,
+            updateFunc: update_circles,
+            maxSpeed: maxSpeed,
+            children: []
+        });
+    }
+}
+
+function update_circles(obj) {
+    if (currentFrame === 0) { return; }
+
+    var speed = calc_speed(obj.index) / obj.maxSpeed;
+    var speedwoMaxS = calc_speed(obj.index);
+    console.log(speedwoMaxS + "________________" + obj.maxSpeed);
+
+    var radius = 2.0;
+    var circle;
+    //var scaleFactor = 1/(1000*speed);
+    var scaleFactor = 1/(50*speed);
+    //var scaleFactor = 20*speed;
+   
+    if (obj.children.length > trailLength ) {
+        circle = obj.children.shift();
+        circle.material.opacity = 1.0;
+    } else {
+        var segments = 50;
+        var circleGeometry = new THREE.CircleGeometry( radius, segments );
+        var material = new THREE.MeshBasicMaterial({
+            color: 0x003399,
+            transparent: true
+        });
+        circle = new THREE.Mesh( circleGeometry, material );
+      //  console.log("New circle");
+        circle.matrixAutoUpdate = false;
+        circle.rotateOnAxis (new THREE.Vector3( 1, 0, 0 ), degToRad(-90.0));
+        scene.add( circle );
+    }
+
+    circle.position.copy(trc.data.vertSamples[currentFrame][obj.index]);
+    //circle.position.setY(0.0);
+    circle.scale.copy(new THREE.Vector3(scaleFactor, scaleFactor, 1.0 ));
+    circle.updateMatrix();
+    for (var i=0; i<obj.children.length; i++) {
+        obj.children[i].material.opacity *= 0.95;
+    }
+    obj.children.push(circle);
+}
+
+/////////////////////////////////////
+/////////////////////////////////////////
+///////////////////////////////////////////////
+
+function create_test_circles(){
+
+
+var indices = get_selected_marker_indices();
+    for (var i=0; i<indices.length; i++) {
+
+        var velocity = calc_velocity(indices[i], 30);
+        var length = velocity.length();
+        var dir = velocity.normalize();
+
+
+        ///////changed by chanwook
+        var accel = new THREE.Vector3();
+
+        accel.subVectors(preVelo, velocity);
+        accel.divideScalar(0.033333);
+
+        var accel_length = accel.length();
+        var accel_dir = accel.normalize();
+        ////////////////
+    //    console.log(velocity);
+
+        var origin = new THREE.Vector3( 0, 0, 0 );
+        origin.copy(trc.data.vertSamples[currentFrame][indices[i]]);
+
+        var hex = 0xE96B56;
+
+        dynObjs.push({
+            obj: null,
+            index: indices[i],
+            updateFunc: update_test_circles,
+            children: []
+        });
+    }
+
+}
+
+function update_test_circles(obj) {
+   
+ //   var speed = calc_speed(obj.index) / obj.maxSpeed;
+  //  var speedwoMaxS = calc_speed(obj.index);
+
+
+ var velocity = calc_velocity(obj.index, 10);
+    ///////changed by chanwook
+        var accel = new THREE.Vector3();
+
+        accel.subVectors(velocity,preVelo);
+        accel.divideScalar(0.0833333);
+
+
+    var radius = 2.0;
+    var circle;
+    //var scaleFactor = 1/(1000*speed);
+   // var scaleFactor = 1/(50*speed);
+    //var scaleFactor = 20*speed;
+   
+
+  // 1/(1000*speed)
+
+    if (obj.children.length > trailLength ) {
+        circle = obj.children.shift();
+        circle.material.opacity = 1.0;
+    } else {
+        var segments = 50;
+        var circleGeometry = new THREE.CircleGeometry( radius, segments );
+        var material = new THREE.MeshBasicMaterial({
+            color: 0x003399,
+            transparent: true
+        });
+        circle = new THREE.Mesh( circleGeometry, material );
+      //  console.log("New circle");
+        circle.matrixAutoUpdate = false;
+        circle.rotateOnAxis (new THREE.Vector3( 1, 0, 0 ), degToRad(-90.0));
+        scene.add( circle );
+    }
+
+    circle.position.copy(trc.data.vertSamples[currentFrame][obj.index]);
+    //circle.position.setY(0.0);
+    circle.scale.copy(new THREE.Vector3(accel.length()*0.001, accel.length()*0.001, 1.0));
+    circle.updateMatrix();
+    
+    preVelo = velocity;
+
+
+    for (var i=0; i<obj.children.length; i++) {
+        obj.children[i].material.opacity *= 0.95;
+    }
+    obj.children.push(circle);
+}
+
+
+////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////
+////////////////////////////////////////////////////
+////////////////////////////////////////////////
+////////////////////////////////////////////
+
+
+
+
 function create_vertical_arrows() {
     var indices = get_selected_marker_indices();
     for (var i=0; i<indices.length; i++) {
@@ -467,6 +674,8 @@ function update_vertical_arrow(arrowObj) {
 
 }
 
+var preVelo = new THREE.Vector3(0,0,0);
+
 function create_velocity_arrows() {
     var indices = get_selected_marker_indices();
     for (var i=0; i<indices.length; i++) {
@@ -474,12 +683,24 @@ function create_velocity_arrows() {
         var velocity = calc_velocity(indices[i], 30);
         var length = velocity.length();
         var dir = velocity.normalize();
+
+        ///////changed by chanwook
+        var accel = new THREE.Vector3();
+
+        accel.subVectors(preVelo, velocity);
+        accel.divideScalar(0.033333);
+
+        var accel_length = accel.length();
+        var accel_dir = accel.normalize();
+        ////////////////
+    //    console.log(velocity);
+
         var origin = new THREE.Vector3( 0, 0, 0 );
         origin.copy(trc.data.vertSamples[currentFrame][indices[i]]);
 
         var hex = 0xE96B56;
 
-        var arrowHelper = new THREE.ArrowHelper( dir, origin, length, hex );
+        var arrowHelper = new THREE.ArrowHelper( accel_dir, origin, accel_length, hex );
         scene.add( arrowHelper );
         dynObjs.push({
             obj: arrowHelper,
@@ -489,11 +710,45 @@ function create_velocity_arrows() {
     }
 }
 
+// function create_velocity_arrows() {
+//     var indices = get_selected_marker_indices();
+//     for (var i=0; i<indices.length; i++) {
+
+//         var velocity = calc_velocity(indices[i], 30);
+//         var length = velocity.length();
+//         var dir = velocity.normalize();
+
+   
+//         console.log(velocity);
+
+//         var origin = new THREE.Vector3( 0, 0, 0 );
+//         origin.copy(trc.data.vertSamples[currentFrame][indices[i]]);
+
+//         var hex = 0xE96B56;
+
+//         var arrowHelper = new THREE.ArrowHelper( dir, origin, length, hex );
+//         scene.add( arrowHelper );
+//         dynObjs.push({
+//             obj: arrowHelper,
+//             index: indices[i],
+//             updateFunc: update_velocity_arrow
+//         });
+//     }
+// }
+
+
 function update_velocity_arrow(arrowObj) {
     var velocity = calc_velocity(arrowObj.index, 10);
-    arrowObj.obj.setLength(velocity.length()*0.3, velocity.length()*0.2, velocity.length()*0.1);
-    var v = velocity.length();
-    arrowObj.obj.setDirection(velocity.normalize());
+    ///////changed by chanwook
+        var accel = new THREE.Vector3();
+
+        accel.subVectors(velocity,preVelo);
+        accel.divideScalar(0.0833333);
+
+        ////////////////
+    arrowObj.obj.setLength(accel.length()*0.3, accel.length()*0.2, accel.length()*0.1);
+    var v = accel.length();
+    arrowObj.obj.setDirection(accel.normalize());
     arrowObj.obj.position.copy(trc.data.vertSamples[currentFrame][arrowObj.index]);
 
     var col = new THREE.Color();
@@ -501,7 +756,26 @@ function update_velocity_arrow(arrowObj) {
     col.offsetHSL(0.0,0.0,v*0.0005);
 
     arrowObj.obj.setColor(col.getHex());
+
+    preVelo = velocity;
+
+    console.log("A: " + accel.x + "  V: " + velocity.x);
+   // console.log(tDelta / trc.data.DataRate);
 }
+
+// function update_velocity_arrow(arrowObj) {
+//     var velocity = calc_velocity(arrowObj.index, 10);
+//     arrowObj.obj.setLength(velocity.length()*0.3, velocity.length()*0.2, velocity.length()*0.1);
+//     var v = velocity.length();
+//     arrowObj.obj.setDirection(velocity.normalize());
+//     arrowObj.obj.position.copy(trc.data.vertSamples[currentFrame][arrowObj.index]);
+
+//     var col = new THREE.Color();
+//     col.setHex(0xE96B56);
+//     col.offsetHSL(0.0,0.0,v*0.0005);
+
+//     arrowObj.obj.setColor(col.getHex());
+// }
 
 var maxSpeeds = {}
 function create_speed_circles() {
@@ -539,7 +813,7 @@ function update_speed_circles(obj) {
             transparent: true
         });
         circle = new THREE.Mesh( circleGeometry, material );
-        console.log("New circle");
+       // console.log("New circle");
         circle.matrixAutoUpdate = false;
         circle.rotateOnAxis (new THREE.Vector3( 1, 0, 0 ), degToRad(-90.0));
         scene.add( circle );
@@ -553,6 +827,9 @@ function update_speed_circles(obj) {
     }
     obj.children.push(circle);
 }
+
+ 
+//changed by Chanwook 150831///
 
 function create_speed_spheres() {
     var indices = get_selected_marker_indices();
@@ -568,17 +845,15 @@ function create_speed_spheres() {
             children: []
         });
     }
+    delay_count = 0;
 }
 
-/////////////////////////////////////////////
-/////////////////////////////////////////////
-/////////////////////////////////////////////
-
 function update_speed_spheres(obj) {
+
     if (currentFrame === 0) { return; }
     var speed = calc_speed(obj.index) / obj.maxSpeed;
-    var radius = speed*5;
-    var segments = 6;
+    var radius = speed*10;
+    var segments = 20;
     var sphere;
 
     if (obj.children.length > trailLength ) {
@@ -587,7 +862,7 @@ function update_speed_spheres(obj) {
     } else {
         var geometry = new THREE.SphereGeometry(1.0, segments, segments);
         var material = new THREE.MeshBasicMaterial({
-            color: 0xD24344,
+            color: 0x99FF99,
             transparent: true
         });
         sphere = new THREE.Mesh(geometry, material);
@@ -595,16 +870,179 @@ function update_speed_spheres(obj) {
     }
     sphere.position.copy(trc.data.vertSamples[currentFrame][obj.index]);
     sphere.scale.copy(new THREE.Vector3(radius, radius, radius ));
+
     sphere.updateMatrix();
+    
+    camera.lookAt(trc.data.vertSamples[currentFrame][obj.index]);
+
+    
     for (var i=0; i<obj.children.length; i++) {
         obj.children[i].material.opacity *= 0.95;
     }
     obj.children.push(sphere);
+
+    if(delay_count % Math.round(1/speed)  == 0){
+    //if(delay_count % 2 == 0){
+        if(speed > 0.7){
+            if (soundOn == true) {
+                 mySound = new buzz.sound("/sound/chimebar-g-low.wav", {
+                volume: 100
+                }); 
+                mySound.play().fadeIn();
+                soundOn = false;
+            }
+        } else { soundOn = true; }
+
+
+        // if(speed > 0.6 & speed <= 0.7){
+        //     mySound = new buzz.sound("/sound/chimebar-g-low.wav", {
+        //         volume: 80 
+        //     }); 
+        //     mySound.play().fadeIn();
+        // }
+
+        if(speed > 0.5 & speed <= 0.6){
+            if (soundOn == true) {
+            mySound = new buzz.sound("/sound/chimebar-f-low.wav", {
+                volume: 70 
+            }); 
+            mySound.play().fadeIn();
+            soundOn = false;
+            }
+        } else { soundOn = true; }
+
+
+        // if(speed > 0.4 & speed <= 0.5){
+        //     mySound = new buzz.sound("/sound/chimebar-f-low.wav", {
+        //         volume: 60 
+        //     }); 
+        //     mySound.play().fadeIn();
+        // }
+
+        if(speed > 0.3 & speed <= 0.4){
+            if (soundOn == true) {
+            mySound = new buzz.sound("/sound/chimebar-eb-low.wav", {
+                volume: 50 
+            }); 
+            mySound.play().fadeIn();
+            soundOn = false;
+            }
+        } else { soundOn = true; }
+
+
+        // if(speed > 0.25 & speed <= 0.3){
+        //      mySound = new buzz.sound("/sound/chimebar-eb-low.wav", {
+        //     volume: 40 
+        // }); 
+        //     mySound.play().fadeIn();
+        // }
+
+        if(speed > 0.2 & speed <= 0.25){
+            if (soundOn == true) {
+            mySound = new buzz.sound("/sound/chimebar-e-low.wav", {
+                volume: 30 
+            }); 
+            mySound.play().fadeIn();
+         soundOn = false;
+            }
+        } else { soundOn = true; }
+
+
+        // if(speed > 0.15 & speed <= 0.2){
+        //     mySound = new buzz.sound("/sound/chimebar-e-low.wav", {
+        //         volume: 20
+        //     }); 
+        //     mySound.play().fadeIn();
+        // }
+
+        if(speed > 0.1 & speed <= 0.15){
+            if (soundOn == true) {
+            mySound = new buzz.sound("/sound/chimebar-d-low.wav", {
+                volume: 10
+            }); 
+            mySound.play().fadeIn();
+         soundOn = false;
+            }
+        } else { soundOn = true; }
+
+
+        // if(speed > 0.05 & speed <= 0.1){
+        //     mySound = new buzz.sound("/sound/chimebar-c-low.wav", {
+        //         volume: 5
+        //     }); 
+        //     mySound.play().fadeIn();
+        // }
+
+        if(speed < 0.05){
+            if (soundOn == true) {
+            mySound = new buzz.sound("/sound/chimebar-c-low.wav", {
+                volume: 2
+            }); 
+            mySound.play().fadeIn();
+         soundOn = false;
+            }
+        } else { soundOn = true; }
+
+
+
+
+        // else if(speed > 0.6 & speed <= 0.7){
+        //     mySound = new buzz.sound("/sound/chimebar-g-low.wav", {
+        //         volume: 80 
+        //     }); 
+        //     mySound.play().fadeIn();
+        // }else if(speed > 0.5 & speed <= 0.6){
+        //     mySound = new buzz.sound("/sound/chimebar-f-low.wav", {
+        //         volume: 70 
+        //     }); 
+        //     mySound.play().fadeIn();
+        // }else if(speed > 0.4 & speed <= 0.5){
+        //     mySound = new buzz.sound("/sound/chimebar-f-low.wav", {
+        //         volume: 60 
+        //     }); 
+        //     mySound.play().fadeIn();
+        // }else if(speed > 0.3 & speed <= 0.4){
+        //     mySound = new buzz.sound("/sound/chimebar-eb-low.wav", {
+        //         volume: 50 
+        //     }); 
+        //     mySound.play().fadeIn();
+        // }else if(speed > 0.25 & speed <= 0.3){
+        //      mySound = new buzz.sound("/sound/chimebar-eb-low.wav", {
+        //     volume: 40 
+        // }); 
+        //     mySound.play().fadeIn();
+        // }else if(speed > 0.2 & speed <= 0.25){
+        //     mySound = new buzz.sound("/sound/chimebar-e-low.wav", {
+        //         volume: 30 
+        //     }); 
+        //     mySound.play().fadeIn();
+        // }else if(speed > 0.15 & speed <= 0.2){
+        //     mySound = new buzz.sound("/sound/chimebar-e-low.wav", {
+        //         volume: 20
+        //     }); 
+        //     mySound.play().fadeIn();
+        // }else if(speed > 0.1 & speed <= 0.15){
+        //     mySound = new buzz.sound("/sound/chimebar-d-low.wav", {
+        //         volume: 10
+        //     }); 
+        //     mySound.play().fadeIn();
+        // }else if(speed > 0.05 & speed <= 0.1){
+        //     mySound = new buzz.sound("/sound/chimebar-c-low.wav", {
+        //         volume: 5
+        //     }); 
+        //     mySound.play().fadeIn();
+        // }else{
+        //     mySound = new buzz.sound("/sound/chimebar-c-low.wav", {
+        //         volume: 2
+        //     }); 
+        //     mySound.play().fadeIn();
+        // }
+    }
+
+    delay_count++;
 }
 
-/////////////////////////////////////////////
-/////////////////////////////////////////////
-/////////////////////////////////////////////
+////////////////////////////////////////////////////////////////
 
 function calc_velocity(index, tDelta) {
     // tDelta in samples | 120 = 1 second
@@ -618,7 +1056,6 @@ function calc_velocity(index, tDelta) {
     var length = curve.getLength();
 
     var speed = length/ (tDelta / trc.data.DataRate);
-
     // get normalized vector
     var velocity =  new THREE.Vector3();
     velocity.subVectors(curve.getPoint(1),curve.getPoint(0));
@@ -628,6 +1065,7 @@ function calc_velocity(index, tDelta) {
 
     return velocity;
 }
+
 
 function calc_speed(index) {
     if (currentFrame===0) {
